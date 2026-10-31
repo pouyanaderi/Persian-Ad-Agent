@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Persian Ad Agent</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#131b2e;--line:#293650;--text:#edf2ff;--muted:#a8b5ce;--accent:#8b9cff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#172343,var(--bg) 55%);color:var(--text);font-family:Tahoma,Arial,sans-serif;line-height:1.8}
+main{max-width:850px;margin:36px auto;padding:18px}.card{background:#131b2eee;border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 20px 70px #0004}
+h1{margin:0 0 6px;font-size:clamp(25px,5vw,38px)}p{color:var(--muted)}label{display:block;margin:15px 0 6px;font-weight:bold}
+input,textarea,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0c1324;color:var(--text);font:inherit}
+textarea{min-height:110px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+button{width:100%;margin-top:20px;padding:14px;border:0;border-radius:12px;background:var(--accent);color:#080d1a;font:700 16px Tahoma;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}.note{font-size:13px;border-right:3px solid var(--accent);padding-right:12px}
+#status{margin-top:18px;white-space:pre-wrap}video{width:100%;margin-top:15px;border-radius:14px;background:#05070b}.links a{color:#c4ccff;margin-left:16px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.card{padding:17px}main{margin:10px auto}}
+</style>
+</head>
+<body><main><section class="card">
+<h1>Persian Ad Agent</h1>
+<p>از عکس محصول، یک ویدیوی تبلیغاتی فارسی بساز.</p>
+<p class="note">حالت رایگان محلی: حرکت دوربین روی عکس + متن فارسی. این نسخه هنوز ویدیوی مولد AI یا گویندگی خودکار ندارد.</p>
+<form id="form">
+<label for="image">عکس محصول (JPG / PNG / WEBP، حداکثر ۱۵ مگابایت)</label><input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+<label for="description">محصول و خواسته‌ات را توضیح بده</label><textarea id="description" name="description" minlength="3" maxlength="1200" required placeholder="مثلاً: یک عطر لوکس با حس مینیمال؛ تبلیغ مناسب ریلز اینستاگرام"></textarea>
+<div class="grid"><div><label for="headline">تیتر روی ویدیو (اختیاری)</label><input id="headline" name="headline" maxlength="64" placeholder="زیبایی در هر لحظه"></div>
+<div><label for="cta">متن دعوت به اقدام</label><input id="cta" name="cta" value="برای سفارش و اطلاعات بیشتر"></div></div>
+<div class="grid"><div><label for="duration">مدت (ثانیه)</label><select id="duration" name="duration"><option>6</option><option selected>8</option><option>10</option><option>15</option><option>20</option></select></div>
+<div><label for="aspect">نسبت تصویر</label><select id="aspect" name="aspect"><option value="9:16">عمودی 9:16 (ریلز/استوری)</option><option value="16:9">افقی 16:9</option></select></div></div>
+<button id="submit" type="submit">ساخت ویدیو</button>
+</form><div id="status" role="status"></div><div id="result"></div>
+</section></main>
+<script>
+const form=document.querySelector('#form'),button=document.querySelector('#submit'),status=document.querySelector('#status'),result=document.querySelector('#result');
+form.addEventListener('submit',async e=>{e.preventDefault();button.disabled=true;status.textContent='در حال ساخت ویدیو… ممکن است چند لحظه طول بکشد.';result.replaceChildren();
+try{const res=await fetch('/api/generate',{method:'POST',body:new FormData(form)});const data=await res.json();if(!res.ok)throw new Error(data.detail||'خطای ناشناخته');
+status.textContent=data.message+' حالت خروجی: حرکت روی عکس (بدون API پولی).';
+const video=document.createElement('video');video.controls=true;video.playsInline=true;video.src=data.video_url;
+const links=document.createElement('p');links.className='links';const a=document.createElement('a');a.href=data.video_url;a.download='persian-ad.mp4';a.textContent='دریافت ویدیو MP4';
+const s=document.createElement('a');s.href=data.subtitle_url;s.download='subtitles-fa.srt';s.textContent='دریافت زیرنویس SRT';links.append(a,s);result.append(video,links);
+}catch(err){status.textContent='خطا: '+err.message;}finally{button.disabled=false;}});
+</script></body></html>
